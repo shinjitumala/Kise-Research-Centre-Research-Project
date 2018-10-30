@@ -1,0 +1,8 @@
+INFO: [VRFC 10-2263] Analyzing Verilog file "Z:/Kise-Research-Centre-Research-Project/project_1/project_1.srcs/sources_1/new/main.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module m_top
+INFO: [VRFC 10-311] analyzing module m_main
+INFO: [VRFC 10-311] analyzing module m_7segled
+INFO: [VRFC 10-311] analyzing module m_7segcon
+INFO: [VRFC 10-311] analyzing module m_test0
+INFO: [VRFC 10-2263] Analyzing Verilog file "Z:/Kise-Research-Centre-Research-Project/project_1/project_1.sim/sim_1/behav/glbl.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module glbl
