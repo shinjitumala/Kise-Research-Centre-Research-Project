@@ -1,6 +1,10 @@
+`default_nettype none
+
 module m_top();
   reg r_clk=0;
-  initial forever #50 r_clk = ~r_clk;
+  reg r_clk2=0;
+  initial forever #1 r_clk = ~r_clk;
+  initial forever #2 r_clk2 = ~r_clk2;
 
   wire [6:0]  w_sg;
   wire [7:0]  w_an;
@@ -9,6 +13,16 @@ module m_top();
   m_7segcon m_7segcon(r_clk, r_num, w_sg, w_an);
   always @(posedge r_clk) r_num <= convert(32'd37564);
 
+        reg  [11:0] r_rgb;
+  wire        w_lock;
+  wire VGA_HS, VGA_VS;
+
+  assign w_lock = 1'd0;
+  wire [9:0] w_x, w_y;
+  wire video_on, p_tick, temp, temp2;
+  reg  w_reset;
+
+  m_VGA lel (r_clk, r_clk2, w_reset, VGA_HS, VGA_VS, temp, temp2, video_on, p_tick, w_x, w_y);
 
   // convert 32 bit int for 7segcon output
   function [31:0] convert (input reg [31:0] i);
