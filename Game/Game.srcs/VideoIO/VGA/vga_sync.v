@@ -5,23 +5,23 @@ module m_vga
   // You can search "VGA video timings" on google to get all the necessary numbers.
   // Also, make sure that the input clock is the right frequency. All other variables are already here.
   #(parameter
-      H_VISIBLE = 800,
-      H_FRONT   = 40,
-      H_PULSE   = 128,
-      H_BACK    = 88,
+    H_VISIBLE = 800,
+    H_FRONT   = 40,
+    H_PULSE   = 128,
+    H_BACK    = 88,
 
-      V_VISIBLE = 600,
-      V_FRONT   = 1,
-      V_PULSE   = 4,
-      V_BACK    = 23
+    V_VISIBLE = 600,
+    V_FRONT   = 1,
+    V_PULSE   = 4,
+    V_BACK    = 23
   )
   (
-  input  wire        iw_clock, //            input clock: Make sure that it's the correct frequency according to the video timings table.
-  input  wire        iw_rst,   //             reset wire: Will reset the display output. Not really needed so leave it at 0 if not using.
-  output wire        ow_hs,    // horizontal sync signal: Horizontal sync signal for VGA output.
-  output wire        ow_vs,    //   vertical sync signal: Vertical sync signal for VGA output.
-  output wire [10:0] ow_x,     //                      x: The horizontal axis of the pixel which is currently being drawn.
-  output wire [10:0] ow_y      //                      y: The vertical axis of the pixel which is currently being drawn.
+    input  wire        iw_clock, //            input clock: Make sure that it's the correct frequency according to the video timings table.
+    input  wire        iw_rst,   //             reset wire: Will reset the display output. Not really needed so leave it at 0 if not using.
+    output wire        ow_hs,    // horizontal sync signal: Horizontal sync signal for VGA output.
+    output wire        ow_vs,    //   vertical sync signal: Vertical sync signal for VGA output.
+    output wire [10:0] ow_x,     //                      x: The horizontal axis of the pixel which is currently being drawn.
+    output wire [10:0] ow_y      //                      y: The vertical axis of the pixel which is currently being drawn.
   );
   localparam HS_STA = H_VISIBLE + H_FRONT;
   localparam HS_END = HS_STA + H_PULSE;
@@ -45,14 +45,15 @@ module m_vga
   assign ow_y  = (iw_rst) ? 0 : (r_vcount <= V_VISIBLE) ? r_vcount : 0;
 endmodule
 
-module m_vga_test(
-  input  wire        CLK100MHZ,
-  input  wire  [4:0] BTN,
-  output wire        VGA_HS,
-  output wire        VGA_VS,
-  output wire  [3:0] VGA_R,
-  output wire  [3:0] VGA_G,
-  output wire  [3:0] VGA_B
+module m_vga_test
+  (
+    input  wire        CLK100MHZ,
+    input  wire  [4:0] BTN,
+    output wire        VGA_HS,
+    output wire        VGA_VS,
+    output wire  [3:0] VGA_R,
+    output wire  [3:0] VGA_G,
+    output wire  [3:0] VGA_B
   );
   wire w_rst = BTN[0] || BTN[1] || BTN[2] || BTN[3] || BTN[4];
 
@@ -66,13 +67,13 @@ module m_vga_test(
   reg [3:0] r_cnt1 = 0;
 
   m_vga display (
-   .iw_clock   (w_clk2),
-   .iw_rst     (w_rst),
-   .ow_hs      (VGA_HS),
-   .ow_vs      (VGA_VS),
-   .ow_x       (w_x),
-   .ow_y       (w_y)
-   );
+    .iw_clock   (w_clk2),
+    .iw_rst     (w_rst),
+    .ow_hs      (VGA_HS),
+    .ow_vs      (VGA_VS),
+    .ow_x       (w_x),
+    .ow_y       (w_y)
+  );
 
   // Display overlapping 4 squares
   wire w_sq0, w_sq1, w_sq2, w_sq3;
