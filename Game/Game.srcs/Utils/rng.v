@@ -4,7 +4,7 @@ module m_rng
   output wire or_random
 );
 (* OPTIMIZE="OFF" *)
-wire [31:0] r_stage /* synthesis keep */;
+(* ALLOW_COMBINATORIAL_LOOPS = "true", KEEP = "true" *) wire [31:0] r_stage /* synthesis keep */;
 reg r_meta1 = 1'b0;
 reg r_meta2 = 1'b0;
 
@@ -47,4 +47,31 @@ assign r_stage[28] = !r_stage[29];
 assign r_stage[29] = !r_stage[30];
 assign r_stage[30] = !r_stage[31];
 assign r_stage[31] = !r_stage[1];
+endmodule
+
+/******************************************************************************/
+
+module rngtest
+(
+  input  wire        CLK100MHZ,
+  output wire [6:0]  SG,
+  output wire [7:0]  AN
+);
+  reg [31:0] r_num;
+  wire w_rnd;
+  reg [26:0] r_count;
+
+  m_rng rng (CLK100MHZ, w_rnd);
+
+  always @(posedge CLK100MHZ)
+  begin
+    r_count = r_count + 1;
+
+    if (r_count >= 0 && r_count <= 31)
+    begin
+      r_num[r_count] <= w_rnd;
+    end
+  end
+
+  m_int_7seg segcon (CLK100MHZ, r_num, SG, AN);
 endmodule

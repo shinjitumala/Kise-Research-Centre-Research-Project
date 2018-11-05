@@ -44,6 +44,8 @@ module m_sram
   end
 endmodule
 
+/******************************************************************************/
+
 module m_VRAMtest
   (
     input  wire        CLK100MHZ,
@@ -87,7 +89,7 @@ module m_VRAMtest
     .ADDR_WIDTH (VRAM_ADDR_WIDTH),
     .DATA_WIDTH (VRAM_DATA_WIDTH),
     .DEPTH      (VRAM_DEPTH),
-    .MEMFILE    ("sushi.mem")
+    .MEMFILE    ("sushi2.mem")
   )
   vram
   (
@@ -103,7 +105,7 @@ module m_VRAMtest
   initial
   begin
     $display("Loading palette...");
-    $readmemh("sushi_palette.mem", r_palette);
+    $readmemh("sushi2_palette.mem", r_palette);
   end
 
   always @(posedge CLK100MHZ)

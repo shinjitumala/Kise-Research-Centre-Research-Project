@@ -21,29 +21,36 @@ module m_vga
     output wire        ow_hs,    // horizontal sync signal: Horizontal sync signal for VGA output.
     output wire        ow_vs,    //   vertical sync signal: Vertical sync signal for VGA output.
     output wire [10:0] ow_x,     //                      x: The horizontal axis of the pixel which is currently being drawn.
-    output wire [10:0] ow_y      //                      y: The vertical axis of the pixel which is currently being drawn.
+    output wire [10:0] ow_y,     //                      y: The vertical axis of the pixel which is currently being drawn.
+    output wire        ow_activ //                 active: High during active pixel drawing.
   );
+  // Constants for horizontal sync.
   localparam HS_STA = H_VISIBLE + H_FRONT;
   localparam HS_END = HS_STA + H_PULSE;
+  // Constants for vertical sync.
   localparam VS_STA = V_VISIBLE + V_FRONT;
   localparam VS_END = VS_STA + V_PULSE;
-  localparam LINE   = H_FRONT + H_PULSE + H_BACK + H_VISIBLE - 1;
-  localparam SCREEN = V_FRONT + V_PULSE + V_BACK + V_VISIBLE - 1;
+  // Constants for maximum internal count value.
+  localparam H_MAX   = H_FRONT + H_PULSE + H_BACK + H_VISIBLE - 1;
+  localparam V_MAX = V_FRONT + V_PULSE + V_BACK + V_VISIBLE - 1;
 
   reg [10:0] r_hcount = 0;
   reg [10:0] r_vcount = 0;
 
   always @(posedge iw_clock)
   begin
-    r_hcount <= (iw_rst) ? 0 : (r_hcount == LINE) ? 0 : r_hcount + 1;
-    r_vcount <= (iw_rst) ? 0 : (r_hcount != LINE) ? r_vcount : (r_vcount == SCREEN) ? 0 : r_vcount + 1;
+    r_hcount <= (iw_rst) ? 0 : (r_hcount == H_MAX) ? 0 : r_hcount + 1;
+    r_vcount <= (iw_rst) ? 0 : (r_hcount != H_MAX) ? r_vcount : (r_vcount == V_MAX) ? 0 : r_vcount + 1;
   end
 
-  assign ow_hs = (iw_rst) ? 1 : (r_hcount >= HS_STA && r_hcount <= HS_END) ? 0 : 1;
-  assign ow_vs = (iw_rst) ? 1 : (r_vcount >= VS_STA && r_vcount <= VS_END) ? 0 : 1;
-  assign ow_x  = (iw_rst) ? 0 : (r_hcount <= H_VISIBLE) ? r_hcount : 0;
-  assign ow_y  = (iw_rst) ? 0 : (r_vcount <= V_VISIBLE) ? r_vcount : 0;
+  assign ow_hs = (iw_rst) ? 1 : (r_hcount >= HS_STA && r_hcount < HS_END) ? 0 : 1;
+  assign ow_vs = (iw_rst) ? 1 : (r_vcount >= VS_STA && r_vcount < VS_END) ? 0 : 1;
+  assign ow_x  = (iw_rst) ? 0 : (r_hcount < H_VISIBLE) ? r_hcount : 0;
+  assign ow_y  = (iw_rst) ? 0 : (r_vcount < V_VISIBLE) ? r_vcount : 0;
+  assign ow_activ = (iw_rst) ? 0 : (r_hcount < H_VISIBLE && r_vcount < V_VISIBLE);
 endmodule
+
+/******************************************************************************/
 
 module m_vga_test
   (

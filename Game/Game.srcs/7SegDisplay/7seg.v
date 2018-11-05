@@ -70,8 +70,8 @@ module m_int_7seg
 (
   input  wire        iw_clock,
   input  wire [31:0] iw_int,
-  output reg  [6:0]  or_sg,
-  output reg  [7:0]  or_an
+  output wire  [6:0]  or_sg,
+  output wire  [7:0]  or_an
 );
   reg [3:0]  r_digit [7:0];
   reg [31:0] r_converted;
@@ -88,4 +88,15 @@ module m_int_7seg
     r_converted = {r_digit[7], r_digit[6], r_digit[5], r_digit[4], r_digit[3], r_digit[2], r_digit[1], r_digit[0]};
   end
   m_7segcon segcon (iw_clock, r_converted, or_sg, or_an);
+endmodule
+
+/******************************************************************************/
+
+module m_7segtest
+(
+  input  wire        CLK100MHZ,
+  output wire [6:0]  SG,
+  output wire [7:0]  AN
+);
+  m_int_7seg segcon (CLK100MHZ, 32'd20181102, SG, AN);
 endmodule
