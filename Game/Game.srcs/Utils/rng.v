@@ -51,7 +51,29 @@ endmodule
 
 /******************************************************************************/
 
-module rngtest
+module m_rng_16bit
+(
+  input  wire        iw_clock,
+  input  wire        iw_generate,
+  output reg  [15:0] or_random
+);
+  wire w_random;
+  m_rng rng (iw_clock, w_random);
+
+  reg [15:0] r_random;
+  reg [3:0]  r_count;
+  always @(posedge iw_clock)
+  begin
+    r_count <= r_count + 1;
+    r_random[r_count] <= w_random;
+  end
+
+  always @(posedge iw_generate) or_random <= r_random;
+endmodule
+
+/******************************************************************************/
+
+module m_rng_test
 (
   input  wire        CLK100MHZ,
   output wire [6:0]  SG,

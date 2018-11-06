@@ -14,32 +14,34 @@ module m_entity
   output wire                    ow_draw,
   output reg  [DATA_WIDTH - 1:0] or_data
 );
-  wire w_address;
+  wire [ADDR_WIDTH - 1:0] w_address;
+  wire [DATA_WIDTH - 1:0] w_data;
 
   m_sram
   #(
     .ADDR_WIDTH (ADDR_WIDTH),
-    .DATA_WIDTH (ADDR_WIDTH),
+    .DATA_WIDTH (DATA_WIDTH),
     .DEPTH      (ENTITY_SIZE * ENTITY_SIZE),
     .MEMFILE    (MEMFILE)
   )
   data
   (
     .iw_clock   (iw_clock),
-    .iw_address (w_address),
-    .iw_wire    (0),
-    .or_data    (or_data),
+    .iw_addr    (w_address),
+    .iw_write   (0),
+    .or_data    (w_data),
     .iw_data    (0)
   );
 
   assign ow_draw = (((iw_pos_x <= iw_draw_x) && (iw_draw_x < iw_pos_x + ENTITY_SIZE)) &&
                     ((iw_pos_y <= iw_draw_y) && (iw_draw_y < iw_pos_y + ENTITY_SIZE)));
   assign w_address = (ow_draw) ? ((iw_draw_y - iw_pos_y) * ENTITY_SIZE + (iw_draw_x - iw_pos_x)) : 0;
+  always @(posedge iw_clock) or_data <= w_data;
 endmodule
 
 /******************************************************************************/
 
-module m_entitytest
+module m_entity_test
 (
   input  wire        CLK100MHZ,
   input  wire [4:0]  BTN,
@@ -54,7 +56,11 @@ module m_entitytest
   output reg  [3:0]  VGA_B
 );
   wire w_vclk;
+  //reg CLK100MHZ = 0;
   CLK40MHZ clk (w_vclk, CLK100MHZ);
+
+  //initial forever #2 w_vclk = ~w_vclk;
+  //initial forever #1 CLK100MHZ = ~CLK100MHZ;
 
   wire [10:0] w_display_x;
   wire [10:0] w_display_y;
@@ -104,15 +110,16 @@ module m_entitytest
 
   reg [10:0] r_pos_x = 400, r_pos_y = 300;
   wire w_draw;
-  reg [VRAM_DATA_WIDTH - 1:0] r_data;
+  wire [VRAM_DATA_WIDTH - 1:0] w_data;
 
   m_entity
   #(
     .ADDR_WIDTH  (VRAM_ADDR_WIDTH),
     .DATA_WIDTH  (VRAM_DATA_WIDTH),
     .ENTITY_SIZE (32),
-    .MEMFILE("sprites.mem")
+    .MEMFILE("fighter.mem")
   )
+  player
   (
     .iw_clock  (CLK100MHZ),
     .iw_draw_x (w_display_x),
@@ -120,7 +127,7 @@ module m_entitytest
     .iw_pos_x  (r_pos_x),
     .iw_pos_y  (r_pos_y),
     .ow_draw   (w_draw),
-    .or_data   (r_data)
+    .or_data   (w_data)
   );
 
   reg [11:0] r_sprite_palette [0:255];
@@ -128,26 +135,40 @@ module m_entitytest
   initial
   begin
     $display("Loading sprite r_sprite_palette.");
-    $readmemh("sprites_palette.mem", r_sprite_palette);
+    $readmemh("fighter_palette.mem", r_sprite_palette);
   end
 
+  reg [24:0] r_i = 0;
   always @(posedge CLK100MHZ)
   begin
-  // Player control
-  if (BTN[4] && r_pos_x < DISPLAY_WIDTH - 32)
-    r_pos_x <= r_pos_x + 1;
-  if (BTN[1] && r_pos_x > 0)
-    r_pos_x <= r_pos_x - 1;
-  if (BTN[3] && r_pos_y < DISPLAY_HEIGHT - 32)
-    r_pos_y <= r_pos_y + 1;
-  if (BTN[2] && r_pos_y > 0)
-    r_pos_y <= r_pos_y - 1;
+    r_i <= r_i + 1;
+    if(r_i)
+    begin
+      // Player control
+      if (BTN[4] && r_pos_x < DISPLAY_WIDTH - 32)
+        r_pos_x <= r_pos_x + 1;
+      if (BTN[1] && r_pos_x > 0)
+        r_pos_x <= r_pos_x - 1;
+      if (BTN[3] && r_pos_y < DISPLAY_HEIGHT - 32)
+        r_pos_y <= r_pos_y + 1;
+      if (BTN[2] && r_pos_y > 0)
+        r_pos_y <= r_pos_y - 1;
+    end
 
     r_vram_address <= w_display_y * DISPLAY_WIDTH + w_display_x;
+
+    // Draw Player
+    if (w_draw)
+    begin
+      r_vram_write <= 1;
+      r_vram_datain <= w_data;
+    end
+    else
+      r_vram_write <= 0;
+
+    // Draw from VRAM
     if (w_display_active)
       r_vga_out <= r_sprite_palette[w_vram_dataout];
-    else if (w_display_active)
-      r_vga_out <= r_vga_out;
     else
       r_vga_out <= 0;
     VGA_R <= r_vga_out[11:8];

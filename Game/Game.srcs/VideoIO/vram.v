@@ -46,16 +46,16 @@ endmodule
 
 /******************************************************************************/
 
-module m_VRAMtest
-  (
-    input  wire        CLK100MHZ,
-    input  wire [4:0]  BTN,
-    output wire        VGA_HS,
-    output wire        VGA_VS,
-    output reg  [3:0]  VGA_R,
-    output reg  [3:0]  VGA_G,
-    output reg  [3:0]  VGA_B
-  );
+module m_vram_test
+(
+  input  wire        CLK100MHZ,
+  input  wire [4:0]  BTN,
+  output wire        VGA_HS,
+  output wire        VGA_VS,
+  output reg  [3:0]  VGA_R,
+  output reg  [3:0]  VGA_G,
+  output reg  [3:0]  VGA_B
+);
   wire w_reset = BTN[0] || BTN[1] || BTN[2] || BTN[3] || BTN[4];
 
   wire w_clk;
@@ -91,7 +91,7 @@ module m_VRAMtest
     .ADDR_WIDTH (VRAM_ADDR_WIDTH),
     .DATA_WIDTH (VRAM_DATA_WIDTH),
     .DEPTH      (VRAM_DEPTH),
-    .MEMFILE    ("sushi2.mem")
+    .MEMFILE    ("space.mem")
   )
   vram
   (
@@ -107,7 +107,7 @@ module m_VRAMtest
   initial
   begin
     $display("Loading palette...");
-    $readmemh("sushi2_palette.mem", r_palette);
+    $readmemh("space_palette.mem", r_palette);
   end
 
   always @(posedge CLK100MHZ)

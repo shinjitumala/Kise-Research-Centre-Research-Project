@@ -2,7 +2,7 @@
 
 module m_test0
 (
-  input  wire        CLK100MHZ,
+  //input  wire        CLK100MHZ,
   input  wire [4:0]  BTN,
   input  wire [15:0] SW,
   output wire [6:0]  SG,
@@ -15,7 +15,7 @@ module m_test0
   output reg  [3:0]  VGA_B
 );
   wire w_vclk;
-  CLK40MHZ clk (w_vclk, CLK100MHZ);
+  //CLK40MHZ clk (w_vclk, CLK100MHZ);
 
   wire [10:0] w_x;
   wire [10:0] w_y;
