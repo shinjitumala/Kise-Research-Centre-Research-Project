@@ -43,8 +43,8 @@ module m_vga
     r_vcount <= (iw_rst) ? 0 : (r_hcount != H_MAX) ? r_vcount : (r_vcount == V_MAX) ? 0 : r_vcount + 1;
   end
 
-  assign ow_hs = (iw_rst) ? 1 : (r_hcount >= HS_STA && r_hcount < HS_END) ? 0 : 1;
-  assign ow_vs = (iw_rst) ? 1 : (r_vcount >= VS_STA && r_vcount < VS_END) ? 0 : 1;
+  assign ow_hs = (iw_rst) ? 1 : (r_hcount >= HS_STA && r_hcount <= HS_END) ? 0 : 1;
+  assign ow_vs = (iw_rst) ? 1 : (r_vcount >= VS_STA && r_vcount <= VS_END) ? 0 : 1;
   assign ow_x  = (iw_rst) ? 0 : (r_hcount < H_VISIBLE) ? r_hcount : 0;
   assign ow_y  = (iw_rst) ? 0 : (r_vcount < V_VISIBLE) ? r_vcount : 0;
   assign ow_activ = (iw_rst) ? 0 : (r_hcount < H_VISIBLE && r_vcount < V_VISIBLE);

@@ -5,7 +5,7 @@ module m_sram
     ADDR_WIDTH = 8,
     DATA_WIDTH = 8,
     DEPTH      = 256,
-    MEMFILE    =""
+    MEMFILE    = ""
   )
   (
     input  wire                    iw_clock,
@@ -61,8 +61,9 @@ module m_VRAMtest
   wire w_clk;
   CLK40MHZ clk (w_clk, CLK100MHZ);
 
-  wire [9:0] w_x;
-  wire [9:0] w_y;
+  wire [10:0] w_x;
+  wire [10:0] w_y;
+  wire       w_activ;
 
   m_vga display
   (
@@ -71,7 +72,8 @@ module m_VRAMtest
     .ow_hs    (VGA_HS),
     .ow_vs    (VGA_VS),
     .ow_x     (w_x),
-    .ow_y     (w_y)
+    .ow_y     (w_y),
+    .ow_activ (w_activ)
   );
 
   // VRAM
@@ -79,7 +81,7 @@ module m_VRAMtest
   localparam DISPLAY_HEIGHT  = 600;
   localparam VRAM_DEPTH      = DISPLAY_WIDTH * DISPLAY_HEIGHT;
   localparam VRAM_ADDR_WIDTH = 19;
-  localparam VRAM_DATA_WIDTH = 6;
+  localparam VRAM_DATA_WIDTH = 8;
 
   reg  [VRAM_ADDR_WIDTH - 1:0] r_adress;
   wire [VRAM_DATA_WIDTH - 1:0] w_data;
@@ -112,7 +114,10 @@ module m_VRAMtest
   begin
     r_adress <= w_y * DISPLAY_WIDTH + w_x;
 
-    r_rgb <= r_palette[w_data];
+    if (w_activ)
+      r_rgb <= r_palette[w_data];
+    else
+      r_rgb <= 0;
 
     VGA_R <= r_rgb[11:8];
     VGA_G <= r_rgb[7:4];
