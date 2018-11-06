@@ -142,7 +142,7 @@ module m_entity_test
   always @(posedge CLK100MHZ)
   begin
     r_i <= r_i + 1;
-    if(r_i)
+    if(r_i == 0)
     begin
       // Player control
       if (BTN[4] && r_pos_x < DISPLAY_WIDTH - 32)
