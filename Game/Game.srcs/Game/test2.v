@@ -31,7 +31,7 @@ module top(
       .ow_vs    (VGA_VS),
       .ow_x     (x),
       .ow_y     (y),
-      .ow_activ (active)
+      .ow_active (active)
     );
 
     // VRAM frame buffers (read-write)

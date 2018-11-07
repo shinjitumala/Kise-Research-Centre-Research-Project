@@ -22,7 +22,8 @@ module m_vga
     output wire        ow_vs,    //   vertical sync signal: Vertical sync signal for VGA output.
     output wire [10:0] ow_x,     //                      x: The horizontal axis of the pixel which is currently being drawn.
     output wire [10:0] ow_y,     //                      y: The vertical axis of the pixel which is currently being drawn.
-    output wire        ow_activ //                 active: High during active pixel drawing.
+    output wire        ow_active, //                 active: High during active pixel drawing.
+    output wire        ow_frame  //                  frame: High for one clock at the end of a frame.
   );
   // Constants for horizontal sync.
   localparam HS_STA = H_VISIBLE + H_FRONT;
@@ -47,7 +48,8 @@ module m_vga
   assign ow_vs = (iw_rst) ? 1 : (r_vcount >= VS_STA && r_vcount <= VS_END) ? 0 : 1;
   assign ow_x  = (iw_rst) ? 0 : (r_hcount < H_VISIBLE) ? r_hcount : 0;
   assign ow_y  = (iw_rst) ? 0 : (r_vcount < V_VISIBLE) ? r_vcount : 0;
-  assign ow_activ = (iw_rst) ? 0 : (r_hcount < H_VISIBLE && r_vcount < V_VISIBLE);
+  assign ow_active = (iw_rst) ? 0 : (r_hcount < H_VISIBLE && r_vcount < V_VISIBLE);
+  assign ow_frame = (iw_rst) ? 0 : (r_vcount == V_MAX) ? 1 : 0; 
 endmodule
 
 /******************************************************************************/

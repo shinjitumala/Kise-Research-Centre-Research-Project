@@ -32,7 +32,7 @@ module test1
     .ow_vs    (VGA_VS),
     .ow_x     (w_display_x),
     .ow_y     (w_display_y),
-    .ow_activ (w_display_active)
+    .ow_active (w_display_active)
   );
 
   // VRAM

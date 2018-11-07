@@ -77,7 +77,7 @@ module m_entity_test
     .ow_vs    (VGA_VS),
     .ow_x     (w_display_x),
     .ow_y     (w_display_y),
-    .ow_activ (w_display_active)
+    .ow_active (w_display_active)
   );
 
   // VRAM
@@ -138,20 +138,20 @@ module m_entity_test
     $readmemh("fighter_palette.mem", r_sprite_palette);
   end
 
-  reg [24:0] r_i = 0;
+  reg [20:0] r_i = 0;
   always @(posedge CLK100MHZ)
   begin
     r_i <= r_i + 1;
     if(r_i == 0)
     begin
       // Player control
-      if (BTN[4] && r_pos_x < DISPLAY_WIDTH - 32)
+      if (BTN[3] && r_pos_x < DISPLAY_WIDTH - 32)
         r_pos_x <= r_pos_x + 1;
-      if (BTN[1] && r_pos_x > 0)
+      if (BTN[2] && r_pos_x > 0)
         r_pos_x <= r_pos_x - 1;
-      if (BTN[3] && r_pos_y < DISPLAY_HEIGHT - 32)
+      if (BTN[4] && r_pos_y < DISPLAY_HEIGHT - 32)
         r_pos_y <= r_pos_y + 1;
-      if (BTN[2] && r_pos_y > 0)
+      if (BTN[1] && r_pos_y > 0)
         r_pos_y <= r_pos_y - 1;
     end
 

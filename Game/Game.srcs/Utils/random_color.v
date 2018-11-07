@@ -45,7 +45,7 @@ module m_random_color_test
     .ow_vs    (VGA_VS),
     .ow_x     (w_x),
     .ow_y     (w_y),
-    .ow_activ (w_activ)
+    .ow_active (w_activ)
   );
 
   wire [11:0] r_rgb;
