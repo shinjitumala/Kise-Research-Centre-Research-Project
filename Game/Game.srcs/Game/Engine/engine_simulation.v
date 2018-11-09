@@ -15,11 +15,11 @@ module m_engine
   /****************************************************************************/
   // Simulation
   /****************************************************************************/
-  // reg w_display_clock = 0, r_display_clock = 0;
-  // initial forever #1 w_display_clock = ~w_display_clock;
+  reg w_display_clock = 0, r_display_clock = 0;
+  initial forever #1 w_display_clock = ~w_display_clock;
   // initial forever #2 r_display_clock = ~r_display_clock;
   //
-  // assign w_display_clock = r_display_clock;
+  assign w_display_clock = r_display_clock;
   /****************************************************************************/
 
   /****************************************************************************/
@@ -33,7 +33,7 @@ module m_engine
   wire        w_display_frame;
   reg  [11:0] r_display_out;
 
-  CLK40MHZ display_clock (w_display_clock, CLK100MHZ);
+  //CLK40MHZ display_clock (w_display_clock, CLK100MHZ);
   assign w_display_reset = SW[15];
   always @ (posedge w_display_clock)
   begin

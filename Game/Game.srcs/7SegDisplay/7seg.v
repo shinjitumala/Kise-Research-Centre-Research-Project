@@ -77,15 +77,14 @@ module m_int_7seg
   reg [31:0] r_converted;
   always @(posedge iw_clock)
   begin
-    r_digit[0] = iw_int % 10;
-    r_digit[1] = iw_int / 10 % 10;
-    r_digit[2] = iw_int / 100 % 10;
-    r_digit[3] = iw_int / 1000 % 10;
-    r_digit[4] = iw_int / 10000 % 10;
-    r_digit[5] = iw_int / 100000 % 10;
-    r_digit[6] = iw_int / 1000000 % 10;
-    r_digit[7] = iw_int / 10000000 % 10;
-    r_converted = {r_digit[7], r_digit[6], r_digit[5], r_digit[4], r_digit[3], r_digit[2], r_digit[1], r_digit[0]};
+    r_converted[3:0]   <= iw_int % 10;
+    r_converted[7:4]   <= iw_int / 10 % 10;
+    r_converted[11:8]  <= iw_int / 100 % 10;
+    r_converted[15:12] <= iw_int / 1000 % 10;
+    r_converted[19:16] <= iw_int / 10000 % 10;
+    r_converted[23:20] <= iw_int / 100000 % 10;
+    r_converted[27:24] <= iw_int / 1000000 % 10;
+    r_converted[31:28] <= iw_int / 10000000 % 10;
   end
   m_7segcon segcon (iw_clock, r_converted, or_sg, or_an);
 endmodule
