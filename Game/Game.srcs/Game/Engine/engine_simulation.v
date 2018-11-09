@@ -1,6 +1,5 @@
-module m_engine
+module m_engine_simulation
 (
-  input  wire        CLK100MHZ,
   input  wire [4:0]  BTN,
   input  wire [15:0] SW,
   output wire [6:0]  SG,
@@ -15,17 +14,17 @@ module m_engine
   /****************************************************************************/
   // Simulation
   /****************************************************************************/
-  reg w_display_clock = 0, r_display_clock = 0;
-  initial forever #1 w_display_clock = ~w_display_clock;
+  reg r_display_clock = 0;
+  wire w_display_clock;
+  initial forever #1 r_display_clock = ~r_display_clock;
   // initial forever #2 r_display_clock = ~r_display_clock;
   //
   assign w_display_clock = r_display_clock;
   /****************************************************************************/
-
   /****************************************************************************/
   // Display
   /****************************************************************************/
-  wire        w_display_clock;
+  //wire        w_display_clock;
   wire [10:0] w_display_x;
   wire [10:0] w_display_y;
   wire        w_display_active;
@@ -34,22 +33,7 @@ module m_engine
   reg  [11:0] r_display_out;
 
   //CLK40MHZ display_clock (w_display_clock, CLK100MHZ);
-  assign w_display_reset = SW[15];
-  always @ (posedge w_display_clock)
-  begin
-    if (w_display_active)
-    begin
-      VGA_R <= r_display_out[11:8];
-      VGA_G <= r_display_out[7:4];
-      VGA_B <= r_display_out[3:0];
-    end
-    else
-    begin
-      VGA_R <= 0;
-      VGA_G <= 0;
-      VGA_B <= 0;
-    end
-  end
+  assign w_display_reset = 0;
 
   m_vga display
   (
@@ -63,6 +47,7 @@ module m_engine
     .ow_frame  (w_display_frame)
   );
   /****************************************************************************/
+  /****************************************************************************/
 
   /****************************************************************************/
   // VRAM
@@ -74,14 +59,9 @@ module m_engine
   localparam VRAM_DATA_WIDTH = 4;
 
   reg  [VRAM_ADDR_WIDTH - 1:0] r_vram_address;
-  wire [VRAM_DATA_WIDTH - 1:0] w_vram0_dataout, w_vram1_dataout;
+  wire [VRAM_DATA_WIDTH - 1:0] w_vram_dataout;
   reg  [VRAM_DATA_WIDTH - 1:0] r_vram_dataout_buffer;
   reg  [VRAM_DATA_WIDTH - 1:0] r_vram_datain;
-  reg                          r_vram_write = 0;
-
-  // At the end of every frame switch buffers.
-  always @(posedge w_display_frame)
-    r_vram_write = ~r_vram_write;
 
   m_sram
   #(
@@ -89,27 +69,12 @@ module m_engine
     .DATA_WIDTH (VRAM_DATA_WIDTH),
     .DEPTH      (VRAM_DEPTH)
   )
-  vram0
+  vram
   (
     .iw_addr  (r_vram_address),
     .iw_clock (w_display_clock),
-    .iw_write (r_vram_write),
-    .or_data  (w_vram0_dataout),
-    .iw_data  (r_vram_datain)
-  );
-
-  m_sram
-  #(
-    .ADDR_WIDTH (VRAM_ADDR_WIDTH),
-    .DATA_WIDTH (VRAM_DATA_WIDTH),
-    .DEPTH      (VRAM_DEPTH)
-  )
-  vram1
-  (
-    .iw_addr  (r_vram_address),
-    .iw_clock (w_display_clock),
-    .iw_write (!r_vram_write),
-    .or_data  (w_vram1_dataout),
+    .iw_write (1),
+    .or_data  (w_vram_dataout),
     .iw_data  (r_vram_datain)
   );
   /****************************************************************************/
@@ -148,24 +113,6 @@ module m_engine
     $readmemh("fpr_palette.mem", r_player_palette);
   end
 
-
-  always @(posedge w_display_clock)
-  begin
-    // Player control
-    r_player_control_count <= r_player_control_count + 1;
-    if(r_player_control_count == 0)
-    begin
-      if (BTN[3] && r_player_x < DISPLAY_WIDTH - 32)
-        r_player_x <= r_player_x + 1;
-      if (BTN[2] && r_player_x > 0)
-        r_player_x <= r_player_x - 1;
-      if (BTN[4] && r_player_y < DISPLAY_HEIGHT - 32)
-        r_player_y <= r_player_y + 1;
-      if (BTN[1] && r_player_y > 0)
-        r_player_y <= r_player_y - 1;
-    end
-  end
-
   // Torpedo
   localparam TORPEDO_WIDTH  = 16;
   localparam TORPEDO_HEIGHT = 32;
@@ -192,14 +139,14 @@ module m_engine
   // Enemy
   localparam ENEMY_SIZE = 128;
   reg [11:0] r_enemy_color;
-  reg [25:0] r_enemy_color_counter;
-  reg [10:0] r_enemy_x = 0, r_enemy_y = 400 - ENEMY_SIZE / 2;
+  reg [27:0] r_enemy_color_counter;
+  reg [10:0] r_enemy_x = 400 - ENEMY_SIZE / 2, r_enemy_y = 0;
   wire       w_enemy_draw;
   reg [21:0] r_enemy_control_counter = 0;
   reg [23:0] r_enemy_hit_points = 24'd10000000;
 
   // Color Generator
-  wire [10:0] w_random_color;
+  wire [11:0] w_random_color;
   wire        w_random_generate;
   m_random_color rng (w_display_clock, w_random_generate, w_random_color);
 
@@ -224,50 +171,6 @@ module m_engine
     .or_an    (AN)
   );
 
-  always @(posedge w_display_clock)
-  begin
-    r_enemy_color_counter <= r_enemy_color_counter + 1;
-    r_enemy_control_counter <= r_enemy_control_counter + 1;
-    if (r_enemy_control_counter == 0)
-    begin
-    r_enemy_x <= ((r_enemy_x + ENEMY_SIZE) > (r_player_x + 16)) ? r_enemy_x - 1 : r_enemy_x + 1;
-    r_enemy_y <= ((r_enemy_y + ENEMY_SIZE) > (r_player_y + 16)) ? r_enemy_y - 1 : r_enemy_y + 1;
-    end
-    r_enemy_color <= w_random_color;
-
-    // Hit detection
-    if ((r_torpedo_y - TORPEDO_HEIGHT > r_enemy_y) &&
-       ((r_torpedo_x + TORPEDO_WIDTH > r_enemy_x) || (r_torpedo_x < r_enemy_x + ENEMY_SIZE)) &&
-       (r_torpedo_status == 1))
-    begin
-      r_enemy_hit_points <= (r_enemy_hit_points > (6969 + (r_enemy_color == r_torpedo_color) * 10000)) ? (r_enemy_hit_points - (6969 + (r_enemy_color == r_torpedo_color) * 10000)) : 0;
-    end
-    if (((r_enemy_y + ENEMY_SIZE > r_player_y) || (r_enemy_y < r_player_y + 32)) &&
-        ((r_enemy_x + ENEMY_SIZE > r_player_x) || (r_enemy_x < r_player_x + 32)) &&
-        (r_enemy_hit_points > 0))
-    begin
-      //r_player_status <= 0;
-    end
-  end
-
-  // Torpedo movement
-    always @(posedge w_display_clock)
-    begin
-      r_torpedo_movement_counter <= r_torpedo_movement_counter + 1;
-      r_torpedo_y <= ((r_torpedo_movement_counter == 0) && (r_torpedo_status == 1)) ? r_torpedo_y - 1 : r_torpedo_y;
-      r_torpedo_status <= (r_torpedo_y == 0) ? 0 :
-                          ((((r_torpedo_y + TORPEDO_HEIGHT > r_enemy_y) || (r_torpedo_y < r_enemy_y + ENEMY_SIZE)) &&
-                          ((r_torpedo_x + TORPEDO_WIDTH > r_enemy_x) || (r_torpedo_x < r_enemy_x + ENEMY_SIZE))) ? 0 :
-                          r_torpedo_status);
-      r_torpedo_color <= SW[11:0];
-      if(r_torpedo_status == 0 && BTN[0] && r_player_status)
-      begin
-        r_torpedo_status <= 1;
-        r_torpedo_x <= r_player_x;
-        r_torpedo_y <= r_player_y;
-      end
-    end
-
   assign LED = {SW[15], r_player_status, r_torpedo_status, (r_enemy_hit_points > 0), r_enemy_color};
   assign w_random_generate = (r_enemy_color_counter == 0);
 
@@ -288,27 +191,95 @@ module m_engine
   (
     .iw_clock (w_display_clock),
     .iw_addr  (w_background_address),
-    .iw_write (0),
+    .iw_write (1),
     .iw_data  (0),
     .or_data  (w_background_dataout)
   );
-
-
+  reg [9:0] r_diff_torpedo_enemy_x, r_diff_torpedo_enemy_y, r_diff_player_enemy_x, r_diff_player_enemy_y;
+  /****************************************************************************/
   always @(posedge w_display_clock)
+  begin
+    // Display
+    if (w_display_active)
     begin
+     VGA_R <= r_display_out[11:8];
+     VGA_G <= r_display_out[7:4];
+     VGA_B <= r_display_out[3:0];
+    end
+    else
+    begin
+     VGA_R <= 0;
+     VGA_G <= 0;
+     VGA_B <= 0;
+    end
+
+    // Player control
+    r_player_control_count <= r_player_control_count + 1;
+    if(r_player_control_count == 0)
+    begin
+     if (BTN[3] && r_player_x < DISPLAY_WIDTH - 32)
+       r_player_x <= r_player_x + 1;
+     if (BTN[2] && r_player_x > 0)
+       r_player_x <= r_player_x - 1;
+     if (BTN[4] && r_player_y < DISPLAY_HEIGHT - 32)
+       r_player_y <= r_player_y + 1;
+     if (BTN[1] && r_player_y > 0)
+       r_player_y <= r_player_y - 1;
+    end
+
+    // Torpedo
+    r_diff_torpedo_enemy_x <= (r_enemy_x > r_torpedo_x) ? (r_enemy_x - r_torpedo_x) : (r_torpedo_x - r_enemy_x);
+    r_diff_torpedo_enemy_y <= (r_enemy_y > r_torpedo_y) ? (r_enemy_y - r_torpedo_y) : (r_torpedo_y - r_enemy_y);
+    r_diff_player_enemy_x  <= (r_enemy_x > r_player_x)  ? (r_enemy_x - r_player_x)  : (r_player_x  - r_enemy_x);
+    r_diff_player_enemy_y  <= (r_enemy_y > r_player_y)  ? (r_enemy_y - r_player_y)  : (r_player_y  - r_enemy_y);
+    r_torpedo_movement_counter <= r_torpedo_movement_counter + 1;
+    r_torpedo_y <= ((r_torpedo_movement_counter == 0) && (r_torpedo_status == 1)) ? r_torpedo_y - 1 : r_torpedo_y;
+    r_torpedo_status <= (r_torpedo_y == 0) ? 0 :
+                       (((r_diff_torpedo_enemy_x < ((TORPEDO_WIDTH  + ENEMY_SIZE) / 2)) &&
+                         (r_diff_torpedo_enemy_y < ((TORPEDO_HEIGHT + ENEMY_SIZE) / 2)))
+                         ? 0 : r_torpedo_status);
+    r_torpedo_color <= SW[11:0];
+    if(r_torpedo_status == 0 && BTN[0])
+    begin
+     r_torpedo_status <= 1;
+     r_torpedo_x <= r_player_x;
+     r_torpedo_y <= r_player_y;
+    end
+
+    // Enemy
+    r_enemy_color_counter <= r_enemy_color_counter + 1;
+    r_enemy_control_counter <= r_enemy_control_counter + 1;
+    if (r_enemy_control_counter == 0)
+    begin
+      r_enemy_x <= ((r_enemy_x + ENEMY_SIZE) > (r_player_x + 16)) ? r_enemy_x - 1 : r_enemy_x + 1;
+      r_enemy_y <= ((r_enemy_y + ENEMY_SIZE) > (r_player_y + 16)) ? r_enemy_y - 1 : r_enemy_y + 1;
+    end
+    r_enemy_color <= w_random_color;
+
+    // Hit detection
+    if (((r_diff_torpedo_enemy_x < ((TORPEDO_WIDTH  + ENEMY_SIZE) / 2)) &&
+      (r_diff_torpedo_enemy_y < ((TORPEDO_HEIGHT + ENEMY_SIZE) / 2))) &&
+      (r_torpedo_status == 1))
+    begin
+     r_enemy_hit_points <= (r_enemy_hit_points > (1 + (r_enemy_color == r_torpedo_color) * 10000)) ? (r_enemy_hit_points - (1 + (r_enemy_color == r_torpedo_color) * 10000)) : 0;
+    end
+    if (((r_diff_player_enemy_x < ((32 + ENEMY_SIZE) / 2)) &&
+         (r_diff_player_enemy_y < ((32 + ENEMY_SIZE) / 2))) &&
+       (r_enemy_hit_points > 0))
+    begin
+     r_player_status <= 0;
+    end
+
     // Draw to VRAM
     if      (w_player_draw && r_player_status)           r_vram_datain <= w_player_dataout;
     else if (w_enemy_draw && (r_enemy_hit_points > 0))   r_vram_datain <= 4'b0010;
     else if (w_torpedo_draw && r_torpedo_status)         r_vram_datain <= 4'b0001;
     else                                                 r_vram_datain <= w_background_dataout;
+
+    r_vram_address <= w_display_y * DISPLAY_WIDTH + w_display_x;
+    // Display content of active VRAM
+    r_vram_dataout_buffer <= w_vram_dataout;
+    r_display_out <= (r_vram_dataout_buffer == 4'b0010) ? r_enemy_color :
+                   ((r_vram_dataout_buffer == 4'b0001) ? r_torpedo_color : r_player_palette[r_vram_dataout_buffer]);
   end
-  /****************************************************************************/
-   always @(posedge w_display_clock)
-   begin
-     r_vram_address <= w_display_y * DISPLAY_WIDTH + w_display_x;
-     // Display content of active VRAM
-     r_vram_dataout_buffer <= (r_vram_write) ? w_vram1_dataout : w_vram0_dataout;
-     r_display_out <= (r_vram_dataout_buffer == 4'b0010) ? r_enemy_color :
-                     ((r_vram_dataout_buffer == 4'b0001) ? r_torpedo_color : r_player_palette[r_vram_dataout_buffer]);
-   end
 endmodule

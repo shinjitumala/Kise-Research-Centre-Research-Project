@@ -37,10 +37,7 @@ module m_sram
     begin
       r_memory_array[r_addr] <= r_data;
     end
-    else
-    begin
       or_data <= r_memory_array[r_addr];
-    end
   end
 endmodule
 
