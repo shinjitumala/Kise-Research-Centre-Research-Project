@@ -81,6 +81,8 @@ wire clk_in2_CLK40MHZ;
     .I (clk_in1));
 
 
+
+
   // Clocking PRIMITIVE
   //------------------------------------
 
@@ -129,7 +131,7 @@ wire clk_in2_CLK40MHZ;
     .CLKOUT0_PHASE        (0.000),
     .CLKOUT0_DUTY_CYCLE   (0.500),
     .CLKOUT0_USE_FINE_PS  ("FALSE"),
-    .CLKIN1_PERIOD        (10.0))
+    .CLKIN1_PERIOD        (10.000))
   mmcm_adv_inst
     // Output clocks
    (
@@ -180,6 +182,9 @@ wire clk_in2_CLK40MHZ;
   BUFG clkf_buf
    (.O (clkfbout_buf_CLK40MHZ),
     .I (clkfbout_CLK40MHZ));
+
+
+
 
 
 

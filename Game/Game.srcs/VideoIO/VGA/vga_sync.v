@@ -20,10 +20,10 @@ module m_vga
     input  wire        iw_rst,   //             reset wire: Will reset the display output. Not really needed so leave it at 0 if not using.
     output wire        ow_hs,    // horizontal sync signal: Horizontal sync signal for VGA output.
     output wire        ow_vs,    //   vertical sync signal: Vertical sync signal for VGA output.
-    output wire [10:0] ow_x,     //                      x: The horizontal axis of the pixel which is currently being drawn.
-    output wire [10:0] ow_y,     //                      y: The vertical axis of the pixel which is currently being drawn.
-    output wire        ow_active, //                 active: High during active pixel drawing.
-    output wire        ow_frame  //                  frame: High for one clock at the end of a frame.
+    output wire [9:0]  ow_x,     //                      x: The horizontal axis of the pixel which is currently being drawn.
+    output wire [9:0]  ow_y,     //                      y: The vertical axis of the pixel which is currently being drawn.
+    output wire        ow_active //                 active: High during active pixel drawing.
+    // output wire        ow_frame  //                  frame: High for one clock at the end of a frame. Used for buffering.
   );
   // Constants for horizontal sync.
   localparam HS_STA = H_VISIBLE + H_FRONT;
@@ -49,7 +49,7 @@ module m_vga
   assign ow_x  = (iw_rst) ? 0 : (r_hcount < H_VISIBLE) ? r_hcount : 0;
   assign ow_y  = (iw_rst) ? 0 : (r_vcount < V_VISIBLE) ? r_vcount : 0;
   assign ow_active = (iw_rst) ? 0 : (r_hcount < H_VISIBLE && r_vcount < V_VISIBLE);
-  assign ow_frame = (iw_rst) ? 0 : (r_vcount == V_MAX) ? 1 : 0; 
+  // assign ow_frame = (iw_rst) ? 0 : (r_vcount == V_MAX) ? 1 : 0;
 endmodule
 
 /******************************************************************************/

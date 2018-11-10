@@ -1,19 +1,21 @@
 ///////////////////////////////////////////////////////////////////////////////
 //    
 //    Company:          Xilinx
-//    Engineer:         Jim Tatsukawa
+//    Engineer:         Jim Tatsukawa, Ralf Krueger, updated for Ultrascale+ 
 //    Date:             6/15/2015
-//    Design Name:      PLLE3 DRP
-//    Module Name:      plle3_drp_func.h
-//    Version:          1.10
-//    Target Devices:   UltraScale Architecture
-//    Tool versions:    2015.1
+//    Design Name:      PLLE4 DRP
+//    Module Name:      plle4_drp_func.h
+//    Version:          2.0
+//    Target Devices:   UltraScale+ Architecture
+//    Tool versions:    2017.1
 //    Description:      This header provides the functions necessary to  
 //                      calculate the DRP register values for the V6 PLL.
 //                      
 //	Revision Notes:	8/11 - PLLE3 updated for PLLE3 file 4564419
 //	Revision Notes:	6/15 - pll_filter_lookup fixed for max M of 19
-//                         PM_Rise bits have been removed for PLLE3
+//                           M_Rise bits have been removed for PLLE3
+//	Revision Notes:	2/28/17 - pll_filter_lookup and CPRES updated for 
+//                           Ultrascale+ and for max M of 21
 // 
 //    Disclaimer:  XILINX IS PROVIDING THIS DESIGN, CODE, OR
 //                 INFORMATION "AS IS" SOLELY FOR USE IN DEVELOPING
@@ -33,7 +35,7 @@
 //                 OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
 //                 PURPOSE.
 // 
-//                 (c) Copyright 2009-2010 Xilinx, Inc.
+//                 (c) Copyright 2009-2017 Xilinx, Inc.
 //                 All rights reserved.
 // 
 ///////////////////////////////////////////////////////////////////////////////
@@ -184,7 +186,7 @@ function [10:0] mmcm_pll_phase
 
    begin
 `ifdef DEBUG
-      $display("mmcm_pll_phase-divide:%d,phase:%d",
+      $display("pll_phase-divide:%d,phase:%d",
          divide, phase);
 `endif
    
@@ -228,16 +230,16 @@ endfunction
 // This function takes the divide value and outputs the necessary lock values
 function [39:0] mmcm_pll_lock_lookup
    (
-      input [6:0] divide // Max divide is 64
+      input [6:0] divide // Max divide is 21
    );
    
-   reg [759:0]   lookup;
+   reg [839:0]   lookup;
    
    begin
       lookup = {
          // This table is composed of:
          // LockRefDly_LockFBDly_LockCnt_LockSatHigh_UnlockCnt
-         40'b00110_00110_1111101000_1111101001_0000000001, //1  
+         40'b00110_00110_1111101000_1111101001_0000000001, //1 illegal in Ultrascale+
          40'b00110_00110_1111101000_1111101001_0000000001, //2
          40'b01000_01000_1111101000_1111101001_0000000001, //3
          40'b01011_01011_1111101000_1111101001_0000000001, //4
@@ -255,14 +257,15 @@ function [39:0] mmcm_pll_lock_lookup
          40'b11111_11111_1001110001_1111101001_0000000001, //16
          40'b11111_11111_1000111111_1111101001_0000000001, //17
          40'b11111_11111_1000100110_1111101001_0000000001, //18
-         40'b11111_11111_1000001101_1111101001_0000000001 //19
-         
+         40'b11111_11111_1000001101_1111101001_0000000001, //19
+         40'b11111_11111_0111110100_1111101001_0000000001, //20
+         40'b11111_11111_0111011011_1111101001_0000000001  //21
       };
       
       // Set lookup_entry with the explicit bits from lookup with a part select
-      mmcm_pll_lock_lookup = lookup[ ((19-divide)*40) +: 40];
+      mmcm_pll_lock_lookup = lookup[ ((21-divide)*40) +: 40];
    `ifdef DEBUG
-      $display("lock_lookup: %b", mmcm_pll_lock_lookup);
+      $display("lock_lookup: %b", pll_lock_lookup);
    `endif
    end
 endfunction
@@ -271,41 +274,43 @@ endfunction
 //  and outputs the digital filter settings necessary. Removing bandwidth setting for PLLE3.
 function [9:0] mmcm_pll_filter_lookup
    (
-      input [6:0] divide // Max divide is 19
+      input [6:0] divide // Max divide is 21
    );
    
-   reg [639:0] lookup;
+   reg [209:0] lookup;
    reg [9:0] lookup_entry;
    
    begin
 
       lookup = {
          // CP_RES_LFHF
-         10'b0010_1111_01, //1
-         10'b0010_0011_11, //2
+         10'b0011_0111_11, //1  not legal in Ultrascale+
+         10'b0011_0111_11, //2
          10'b0011_0011_11, //3
-         10'b0010_0001_11, //4
-         10'b0010_0110_11, //5
-         10'b0010_1010_11, //6
-         10'b0010_1010_11, //7
-         10'b0011_0110_11, //8
-         10'b0010_1100_11, //9
-         10'b0010_1100_11, //10
-         10'b0010_1100_11, //11
-         10'b0010_0010_11, //12
-         10'b0011_1100_11, //13
-         10'b0011_1100_11, //14
-         10'b0011_1100_11, //15
-         10'b0011_1100_11, //16
-         10'b0011_0010_11, //17
-         10'b0011_0010_11, //18
-         10'b0011_0010_11 //19
+         10'b0011_1001_11, //4
+         10'b0011_0001_11, //5
+         10'b0100_1110_11, //6
+         10'b0011_0110_11, //7
+         10'b0011_1010_11, //8
+         10'b0111_1001_11, //9
+         10'b0111_1001_11, //10
+         10'b0101_0110_11, //11
+         10'b1100_0101_11, //12
+         10'b0101_1010_11, //13
+         10'b0110_0110_11, //14
+         10'b0110_1010_11, //15
+         10'b0111_0110_11, //16
+         10'b1111_0101_11, //17
+         10'b1100_0110_11, //18
+         10'b1110_0001_11, //19
+         10'b1101_0110_11, //20
+         10'b1111_0001_11  //21
       };
       
-         mmcm_pll_filter_lookup = lookup [ ((19-divide)*10) +: 10];
+         mmcm_pll_filter_lookup = lookup [ ((21-divide)*10) +: 10];
       
    `ifdef DEBUG
-      $display("filter_lookup: %b", mmcm_pll_filter_lookup);
+      $display("filter_lookup: %b", pll_filter_lookup);
    `endif
    end
 endfunction
@@ -313,7 +318,10 @@ endfunction
 // This function set the CLKOUTPHY divide settings to match
 // the desired CLKOUTPHY_MODE setting. To create VCO_X2, then
 // the CLKOUTPHY will be set to 2'b00 since the VCO is internally
-// doubled and 2'b00 will represent divide by 1. Similarly "VCO" // will need to divide the doubled clock VCO clock frequency by // 2 therefore 2'b01 will match a divide by 2.And VCO_HALF will // need to divide the doubled VCO by 4, therefore 2'b10
+// doubled and 2'b00 will represent divide by 1. Similarly "VCO" 
+// will need to divide the doubled clock VCO clock frequency by 
+// 2 therefore 2'b01 will match a divide by 2.And VCO_HALF will 
+// need to divide the doubled VCO by 4, therefore 2'b10
 function [9:0] mmcm_pll_clkoutphy_calc
    (
       input [8*9:0] CLKOUTPHY_MODE
@@ -346,7 +354,7 @@ function [37:0] mmcm_pll_count_calc
    
    begin
    `ifdef DEBUG
-      $display("mmcm_pll_count_calc- divide:%h, phase:%d, duty_cycle:%d",
+      $display("pll_count_calc- divide:%h, phase:%d, duty_cycle:%d",
          divide, phase, duty_cycle);
    `endif
    
@@ -372,7 +380,7 @@ function [37:0] mmcm_pll_count_calc
       $display("div:%d dc:%d phase:%d ht:%d lt:%d ed:%d nc:%d mx:%d dt:%d pm:%d",
          divide, duty_cycle, phase, div_calc[11:6], div_calc[5:0], 
          div_calc[13], div_calc[12], 
-         phase_calc[16:15], phase_calc[5:0], 3'b000);//Removed PM_Rise bits
+         phase_calc[16:15], phase_calc[5:0], 3'b000); //Removed PM_Rise bits
    `endif
       
       mmcm_pll_count_calc =
@@ -440,7 +448,7 @@ function [37:0] mmcm_pll_frac_count_calc
 
    begin
 	`ifdef DEBUG
-			$display("mmcm_pll_frac_count_calc- divide:%h, phase:%d, duty_cycle:%d",
+			$display("pll_frac_count_calc- divide:%h, phase:%d, duty_cycle:%d",
 				divide, phase, duty_cycle);
 	`endif
    
@@ -511,7 +519,6 @@ function [37:0] mmcm_pll_frac_count_calc
          {		2'b00, pm_fall_frac_filtered[2:0], wf_fall_frac,
 			1'b0, clkout0_divide_frac[2:0], 1'b1, wf_rise_frac, phase_calc[10:9], div_calc[13:12], dt[5:0], 
 			3'b000, 1'b0, ht_frac[5:0], lt_frac[5:0] //Removed PM_Rise bits
-//			pm_rise_frac_filtered[2], pm_rise_frac_filtered[1], pm_rise_frac_filtered[0], 1'b0, ht_frac[5:0], lt_frac[5:0]
 		} ;
 
    `ifdef DEBUG
@@ -520,5 +527,4 @@ function [37:0] mmcm_pll_frac_count_calc
 
    end
 endfunction
-
 

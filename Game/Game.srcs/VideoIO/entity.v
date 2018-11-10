@@ -7,10 +7,10 @@ module m_entity
 )
 (
   input  wire                    iw_clock,
-  input  wire [10:0]             iw_draw_x,
-  input  wire [10:0]             iw_draw_y,
-  input  wire [10:0]             iw_pos_x,
-  input  wire [10:0]             iw_pos_y,
+  input  wire [9:0]             iw_draw_x,
+  input  wire [9:0]             iw_draw_y,
+  input  wire [9:0]             iw_pos_x,
+  input  wire [9:0]             iw_pos_y,
   output wire                    ow_draw,
   output reg  [DATA_WIDTH - 1:0] or_data
 );

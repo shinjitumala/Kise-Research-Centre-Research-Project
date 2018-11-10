@@ -3,8 +3,7 @@ module m_rng
   input  wire iw_clock,
   output wire or_random
 );
-(* OPTIMIZE="OFF" *)
-(* ALLOW_COMBINATORIAL_LOOPS = "true", KEEP = "true" *) wire [31:0] r_stage /* synthesis keep */;
+(* OPTIMIZE = "OFF", ALLOW_COMBINATORIAL_LOOPS = "TRUE", KEEP = "TRUE" *) wire [31:0] r_stage;
 reg r_meta1 = 1'b0;
 reg r_meta2 = 1'b0;
 

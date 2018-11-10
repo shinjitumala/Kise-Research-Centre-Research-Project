@@ -4,10 +4,10 @@ module m_torpedo
   HEIGHT = 32
 )
 (
-  input  wire [10:0]             iw_draw_x,
-  input  wire [10:0]             iw_draw_y,
-  input  wire [10:0]             iw_pos_x,
-  input  wire [10:0]             iw_pos_y,
+  input  wire  [9:0]             iw_draw_x,
+  input  wire  [9:0]             iw_draw_y,
+  input  wire  [9:0]             iw_pos_x,
+  input  wire  [9:0]             iw_pos_y,
   output wire                    ow_draw
 );
   assign ow_draw = (((iw_pos_x <= iw_draw_x) && (iw_draw_x < iw_pos_x + WIDTH)) &&
