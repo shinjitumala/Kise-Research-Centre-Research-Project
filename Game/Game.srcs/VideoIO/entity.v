@@ -33,7 +33,7 @@ module m_entity
     .iw_data    (0)
   );
 
-  assign ow_draw = (((iw_pos_x <= iw_draw_x) && (iw_draw_x < iw_pos_x + ENTITY_SIZE)) &&
+  assign ow_draw = (((iw_pos_x <= iw_draw_x) && (iw_draw_x < iw_pos_x + ENTITY_SIZE + 4)) &&
                     ((iw_pos_y <= iw_draw_y) && (iw_draw_y < iw_pos_y + ENTITY_SIZE)));
   assign w_address = (ow_draw) ? ((iw_draw_y - iw_pos_y) * ENTITY_SIZE + (iw_draw_x - iw_pos_x)) : 0;
   always @(posedge iw_clock) or_data <= w_data;

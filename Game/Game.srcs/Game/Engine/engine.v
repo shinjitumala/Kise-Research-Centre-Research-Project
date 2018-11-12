@@ -109,7 +109,7 @@ module m_engine
   //--------------------------------------------------------------------------//
   // Player
   localparam PLAYER_SIZE                = 32;
-  localparam PLAYER_INIT_X              = DISPLAY_WIDTH / 2 + PLAYER_SIZE / 2;
+  localparam PLAYER_INIT_X              = DISPLAY_WIDTH / 2 - PLAYER_SIZE / 2;
   localparam PLAYER_INIT_Y              = DISPLAY_HEIGHT - PLAYER_SIZE;
   reg [15:0] r_player_control_count     = 0;     // Player movement speed.
 
@@ -123,7 +123,7 @@ module m_engine
   // Enemy
   localparam ENEMY_SIZE                 = 128;
   localparam ENEMY_HIT_POINTS           = 24'd10000000;
-  localparam ENEMY_INIT_X               = DISPLAY_WIDTH / 2 + ENEMY_SIZE / 2;
+  localparam ENEMY_INIT_X               = DISPLAY_WIDTH / 2 - ENEMY_SIZE / 2;
   localparam ENEMY_INIT_Y               = 0;
   reg [21:0] r_enemy_control_counter    = 0;    // Enemy movement speed.
   reg [28:0] r_enemy_color_counter      = 0;      // Enemy color change rate.
@@ -256,15 +256,15 @@ module m_engine
   //--------------------------------------------------------------------------//
   wire [9:0] w_diff_torpedo_enemy_x, w_diff_torpedo_enemy_y, w_diff_player_enemy_x, w_diff_player_enemy_y;
 
-  assign w_diff_torpedo_enemy_x = (r_enemy_x > r_torpedo_x) ? (r_enemy_x - r_torpedo_x) : (r_torpedo_x - r_enemy_x);
-  assign w_diff_torpedo_enemy_y = (r_enemy_y > r_torpedo_y) ? (r_enemy_y - r_torpedo_y) : (r_torpedo_y - r_enemy_y);
-  assign w_diff_player_enemy_x  = (r_enemy_x > r_player_x)  ? (r_enemy_x - r_player_x)  : (r_player_x  - r_enemy_x);
-  assign w_diff_player_enemy_y  = (r_enemy_y > r_player_y)  ? (r_enemy_y - r_player_y)  : (r_player_y  - r_enemy_y);
+  assign w_diff_torpedo_enemy_x = ((r_enemy_x + ENEMY_SIZE / 2) > (r_torpedo_x + TORPEDO_WIDTH / 2))  ? ((r_enemy_x + ENEMY_SIZE / 2) - (r_torpedo_x + TORPEDO_WIDTH / 2))  : ((r_torpedo_x + TORPEDO_WIDTH / 2)  - (r_enemy_x + ENEMY_SIZE / 2));
+  assign w_diff_torpedo_enemy_y = ((r_enemy_y + ENEMY_SIZE / 2) > (r_torpedo_y + TORPEDO_HEIGHT / 2)) ? ((r_enemy_y + ENEMY_SIZE / 2) - (r_torpedo_y + TORPEDO_HEIGHT / 2)) : ((r_torpedo_y + TORPEDO_HEIGHT / 2) - (r_enemy_y + ENEMY_SIZE / 2));
+  assign w_diff_player_enemy_x  = ((r_enemy_x + ENEMY_SIZE / 2) > (r_player_x  + PLAYER_SIZE / 2))    ? ((r_enemy_x + ENEMY_SIZE / 2) - (r_player_x  + PLAYER_SIZE / 2))    : ((r_player_x  + PLAYER_SIZE / 2)    - (r_enemy_x + ENEMY_SIZE / 2));
+  assign w_diff_player_enemy_y  = ((r_enemy_y + ENEMY_SIZE / 2) > (r_player_y  + PLAYER_SIZE / 2))    ? ((r_enemy_y + ENEMY_SIZE / 2) - (r_player_y  + PLAYER_SIZE / 2))    : ((r_player_y  + PLAYER_SIZE / 2)    - (r_enemy_y + ENEMY_SIZE / 2));
 
   // LEDs
   assign LED = {SW[15], r_player_status, r_torpedo_status, (r_enemy_hit_points > 0), r_enemy_color};
-  assign LED16 = {r_torpedo_color[11], r_torpedo_color[7], r_torpedo_color[3]};
-  assign LED17 = {r_enemy_color[11], r_enemy_color[7], r_enemy_color[3]};
+  assign LED16 = {r_torpedo_color[3], r_torpedo_color[7], r_torpedo_color[11]};
+  assign LED17 = {r_enemy_color[3], r_enemy_color[7], r_enemy_color[11]};
   //--------------------------------------------------------------------------//
 
   //--------------------------------------------------------------------------//
@@ -333,7 +333,7 @@ module m_engine
     begin
      r_torpedo_status <= 1;
      r_torpedo_x <= r_player_x + PLAYER_SIZE / 2 - TORPEDO_WIDTH / 2;
-     r_torpedo_y <= r_player_y + PLAYER_SIZE / 2 - TORPEDO_WIDTH / 2;
+     r_torpedo_y <= r_player_y;
     end
 
     // Enemy movement
