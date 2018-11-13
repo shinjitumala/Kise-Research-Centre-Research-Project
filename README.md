@@ -83,7 +83,7 @@ status: incomplete
 
 [11/8(木)]
 
-status: incomplete
+status: needs work.
 
 ゲームを遊べるところまで、進めることができた。当たり判定の件については、
 吉川くんのおかげで不等式を直せたのと、当たり判定を少し遅れてから始めるという工夫で
@@ -98,3 +98,15 @@ status: incomplete
 * 描画に遅れが出ていて、画像が全体的に右に３ピクセルぐらいずれていること。（おそらく、あの変なv_ram_dataout_bufferなんていう余計なレジスタを消せば大丈夫なはず。
 * 敵が少し硬すぎること。とりあえず、へたくそでも１分ぐらいでクリアできればいいかなと思う。
 * 座標計算が雑なこと。ミサイルがプレイヤーの左端から発射されることなどなど、もう少し真面目に計算するべきだと思った。
+
+[11/9(金)]
+
+status: complete!
+
+やっと完成したー。
+
+[11/13(火)]
+
+## ゲームの説明
+
+![alt text](https://github.com/shinjitumala/Kise-Research-Centre-Research-Project/raw/master/Game-Manual.jpg "Game Manual")
